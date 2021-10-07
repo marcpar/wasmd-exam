@@ -145,7 +145,7 @@ fn find_index(users: &Vec<Addr> , user: Addr) -> Result<usize, ContractError>{
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Users {} => to_binary(&query_users(deps)?),
-        QueryMsg::User {user} => to_binary(&query_user(deps, user))
+        QueryMsg::User {user} => to_binary(&query_user(deps, user)?)
     }
 }
 
@@ -204,7 +204,7 @@ mod tests {
         // should increase counter by 1
         let res = query(deps.as_ref(), mock_env(), QueryMsg::Users {}).unwrap();
         let value: UsersResponse = from_binary(&res).unwrap();
-        assert_eq!(true, value.users.contains(String::from("wasm1hu8dr4t235qcpuu7ej73mr43ncsg86xdj3s6yw")));
+        assert_eq!(true, value.users.contains(&String::from("wasm1hu8dr4t235qcpuu7ej73mr43ncsg86xdj3s6yw")));
     }
 
     // #[test]

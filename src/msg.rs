@@ -34,7 +34,15 @@ pub struct UsersResponse{
     pub users: Vec<String>
 }
 
+impl UsersResponse {
+    
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ExistsResponse{
     pub exists: bool
+}
+
+impl ExistsResponse {
+    
 }
