@@ -33,3 +33,8 @@ pub enum QueryMsg {
 pub struct UsersResponse{
     pub users: Vec<String>
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct ExistsResponse{
+    pub exists: bool
+}
