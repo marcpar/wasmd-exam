@@ -1,11 +1,14 @@
+use std::ops::Add;
+
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult, Storage, to_binary};
+use cosmwasm_std::{Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, to_binary};
 use cw2::set_contract_version;
+use proc_macro::bridge::server::MultiSpan;
 
 use crate::error::ContractError;
 use crate::msg::{UsersResponse, ExistsResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{State, STATE};
+use crate::state::{self, STATE, State};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:angel-protocol";
@@ -46,9 +49,10 @@ pub fn execute(
 }
 
 pub fn add_user(deps: DepsMut, info: MessageInfo , user: String )-> Result<Response, ContractError> {
-    STATE.update(deps.storage, |mut state| -> Result<_, ContractError>{
+    let address: Addr = deps.api.addr_validate(&user)?;
+    
+    STATE.update(deps.storage, |mut state| -> Result<_, ContractError>{ 
         
-        let address: Addr = deps.api.addr_validate(&user)?;
 
         if state.owner == info.sender{
         
@@ -58,13 +62,17 @@ pub fn add_user(deps: DepsMut, info: MessageInfo , user: String )-> Result<Respo
             Err(ContractError::Unauthorized {})
         }
     })?;
+        // STATE.update(deps.storage, |mut state| -> Result<_, ContractError>{
+            
+        //     Err(ContractError::Unauthorized{})
+        // })?;
     Ok(Response::new().add_attribute("method", "add_user"))
 }
 
 pub fn remove_user(deps: DepsMut, info: MessageInfo , user: String )-> Result<Response, ContractError> {
+    let address: Addr = deps.api.addr_validate(&user)?;
+
     STATE.update(deps.storage, |mut state| -> Result<_, ContractError>{
-        let address: Addr = deps.api.addr_validate(&user)?;
-        
         if state.owner == info.sender{
            let index: usize = find_index( &state.users, address)?;
            state.users.remove(index);
@@ -77,17 +85,28 @@ pub fn remove_user(deps: DepsMut, info: MessageInfo , user: String )-> Result<Re
 }
 
 pub fn update_user(deps: DepsMut, info: MessageInfo , add: Vec<String> , remove: Vec<String>)-> Result<Response, ContractError> {
+    let mut add_addresses : Vec<Addr> = Vec::new(); 
+    let mut remove_addresses : Vec<Addr> = Vec::new(); 
+    for user in add{
+        let address: Addr = deps.api.addr_validate(&user).unwrap();
+        add_addresses.push(address);
+    }
+
+    for user in remove{
+        let address: Addr = deps.api.addr_validate(&user).unwrap();
+        remove_addresses.push(address);
+    }
+
+
     STATE.update(deps.storage, |mut state| -> Result<_, ContractError>{
         
-        for user in add{
-            let address: Addr = deps.api.addr_validate(&user).unwrap();
-            state.users.push(address);
-            
+        for useradd in add_addresses{
+            state.users.push(useradd);    
         }
 
-        for user in remove{
-            let address: Addr = deps.api.addr_validate(&user).unwrap();
-            let index: usize = find_index(&state.users,address).unwrap();
+        for userremove in remove_addresses{
+            
+            let index: usize = find_index(&state.users,userremove).unwrap();
             state.users.remove(index);
         }
         
