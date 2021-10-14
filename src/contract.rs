@@ -1,14 +1,14 @@
-use std::ops::Add;
+
 
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, to_binary};
 use cw2::set_contract_version;
-use proc_macro::bridge::server::MultiSpan;
+
 
 use crate::error::ContractError;
 use crate::msg::{UsersResponse, ExistsResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{self, STATE, State};
+use crate::state::{ STATE, State};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:angel-protocol";
@@ -19,7 +19,7 @@ pub fn instantiate(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
-    msg: InstantiateMsg,
+    _msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     let state = State {
         users: Vec::new(),
